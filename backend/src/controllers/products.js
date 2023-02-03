@@ -39,13 +39,14 @@ export const saveProduct = (req, res) => {
 
 export const deleteProduct = (req, res) => {
     connection.query("DELETE FROM products WHERE id = ?", [req.params.id,], function (err, result){
-
-        console.log(result)
-        res.json({
-        })
+        res.sendStatus(204);
     });
 }
 
 export const updateProduct = (req, res) => {
-    res.send('Hello world')
+    connection.query("UPDATE products SET ? WHERE id = ?", [
+        req.body,
+        req.params.id,
+    ])
+    res.sendStatus(204);
 }
