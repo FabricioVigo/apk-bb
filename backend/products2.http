@@ -1,11 +1,11 @@
-@api = http://localhost:3000/products
+@api = http://localhost:3000/products2
 ###
 
 GET {{api}}
 
 ###
 
-GET {{api}}/5
+GET {{api}}/2
 
 ###
 
@@ -35,5 +35,5 @@ PUT {{api}}/3
 content-type: application/json
 
 {
-    "stock": 45
+    "price": 460
 }

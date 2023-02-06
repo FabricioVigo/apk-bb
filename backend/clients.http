@@ -1,0 +1,36 @@
+@api = http://localhost:3000/clients
+
+###
+
+GET {{api}}
+
+###
+
+GET {{api}}/3
+
+
+###
+
+POST {{api}}
+
+Content-Type: application/json
+
+{
+    "name" : "Los chinos",
+    "address" : "123 Main St",
+}
+
+###
+
+DELETE {{api}}/3
+
+
+###
+
+PUT {{api}}/2
+
+content-type: application/json
+
+{
+    "name" : "24 de mayo"
+}
