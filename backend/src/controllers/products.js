@@ -1,52 +1,68 @@
-import { connection } from '../database';
+import { connect } from '../database';
+const { getProductsWithPrices, getProductById, addProduct, deleteProduct, updateProductData } = require('../services/productService');
 
 export const getProducts = async (req, res) => {
-    connection.query('SELECT * FROM products', function (error, results, fields) {
-        if (error) throw error;
-        console.log(results);
-        res.json(results);
-      });
+    try {
+        const productType = req.params.typeId;
+        const products = await getProductsWithPrices(productType);
+        return res.status(200).json({ products });
+      } catch (error) {
+        return res.status(500).json({ error: error.message });
+      }
 } 
 
 export const getProduct = async (req, res) => {
-    connection.query("SELECT * FROM products WHERE id = ?", [req.params.id], function (error, result, fields){
+    try {
+      const id = req.params.id;
+      const typeId = req.params.typeId;
+      const product = await getProductById(id, typeId);
+      return res.status(200).json({ product });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  };
 
-        console.log(result [0])
-        res.json(result [0])
-    });
+export const getProductCount = async (req, res) => {
+    const connection = await connect();
+    const [rows] = await connection.query("SELECT COUNT(*) FROM products");
+
+    res.json(rows[0]["COUNT(*)"]);
 }
 
-export const getProductCount = (req, res) => {
-    connection.query("SELECT COUNT(*) FROM products", function (error, result, fields){
-        console.log(result)
-        res.json(result[0]["COUNT(*)"])
-    })
-}
+export const createNewProduct = async (req, res) => {
+    try {
+        const { nombre, descripcion, precioLista1, precioLista2, precioFiado, cantidadStock } = req.body;
 
-export const saveProduct = (req, res) => {
-    connection.query("INSERT INTO products (title, description, price) VALUES (?,?,?)", [req.body.title, req.body.description, req.body.price],(error, 
-    results) => {
-       if(results){
+        const newProduct = await addProduct(nombre, descripcion, precioLista1, precioLista2, precioFiado, cantidadStock);
+    
+        res.status(200).json(newProduct);
+      } catch (error) {
+        return res.status(500).json({ error: error.message });
+      }
+  };
 
-           res.json({
-               id: results.insertId,
-               ...req.body})
-       }else{
-        res.json({ error: error })
-       }
-       });
-}
+  export const deleteProductController = async (req, res) => {
+    try {
+      const productId = req.params.id;
+      await deleteProduct(productId);
+      res.sendStatus(204);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Could not delete product' });
+    }
+  };
+  
 
-export const deleteProduct = (req, res) => {
-    connection.query("DELETE FROM products WHERE id = ?", [req.params.id,], function (err, result){
-        res.sendStatus(204);
-    });
-}
+export const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, stock } = req.body;
+    const productData = { id, name, description, price, stock };
 
-export const updateProduct = (req, res) => {
-    connection.query("UPDATE products SET ? WHERE id = ?", [
-        req.body,
-        req.params.id,
-    ])
-    res.sendStatus(204);
-}
+    const updatedProduct = await updateProductData(productData);
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+    };

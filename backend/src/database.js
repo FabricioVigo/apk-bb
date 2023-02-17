@@ -1,16 +1,10 @@
-const mysql = require('mysql2');
+import mysql from 'mysql2/promise';
+import { config } from './config';
 
-export const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'productsdb'
-});
+ export const connect = async () => {
 
-connection.connect((err) => {
-  if (err) {
-    console.error(err.message);
-    return;
-  }
-  console.log('Connected to the MySQL server.');
-});
+  return await mysql.createConnection(config);
+
+}
+
+connect();
