@@ -1,15 +1,26 @@
-CREATE DATABASE productsdb;
-
-USE productsdb;
-
-CREATE TABLE IF NOT EXISTS products (
-    id INT NOT NULL AUTO_INCREMENT,
-    title VARCHAR(100) NOT NULL,
-    description TEXT,
-    price NUMBER,
-    PRIMARY KEY (id)
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(255)
 );
 
-INSERT INTO products(title, description, price) VALUES
-('lavandina', '1 Litro', 400),
-('lavandina', '5 Litro', 2000);
+CREATE TABLE product_prices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  price FLOAT NOT NULL,
+  product_type_id INT NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (product_type_id) REFERENCES product_types(id)
+);
+
+CREATE TABLE product_types (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  type_name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE stock (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
