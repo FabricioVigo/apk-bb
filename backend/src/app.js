@@ -3,6 +3,7 @@ import productsRoutes from './routes/products';
 import cors from 'cors';
 import morgan from 'morgan';
 
+
 const app = express();
 
 app.use(cors());

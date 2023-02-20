@@ -89,49 +89,60 @@ export const getProductsWithPrices = async (typeId) => {
   
   
   export const updateProductData = async (productData) => {
+    let db;
+    let transaction;
     try {
-      const db = await connect();
+      db = await connect();
+      transaction = await db.beginTransaction();
   
-      // Update the product name and description
-      const updateProductQuery = `
-        UPDATE products
-        SET name = ?, description = ?
-        WHERE id = ?
-      `;
-      await db.query(updateProductQuery, [productData.name, productData.description, productData.id]);
+      // Validar los datos de entrada
+      if (!productData.id || !productData.name || !productData.description || !productData.price || !productData.stock) {
+        throw new Error('Los datos de entrada son incorrectos');
+      }
   
-      // Update the product price
-      const updatePriceQuery = `
-        UPDATE product_prices
-        SET price = ?
-        WHERE product_id = ?
-      `;
-      await db.query(updatePriceQuery, [productData.price, productData.id]);
+      // Actualizar el nombre y la descripción del producto
+      const updateProductQuery = 'UPDATE products SET name = ?, description = ? WHERE id = ?';
+      const updateProductResult = await db.query(updateProductQuery, [productData.name, productData.description, productData.id]);
+      if (updateProductResult.affectedRows !== 1) {
+        throw new Error('No se pudo actualizar el producto');
+      }
   
-      // Update the product stock
-      const updateStockQuery = `
-        UPDATE stock
-        SET quantity = ?
-        WHERE product_id = ?
-      `;
-      await db.query(updateStockQuery, [productData.stock, productData.id]);
+      // Actualizar el precio del producto
+      const updatePriceQuery = 'UPDATE product_prices SET price = ? WHERE product_id = ?';
+      const updatePriceResult = await db.query(updatePriceQuery, [productData.price, productData.id]);
+      if (updatePriceResult.affectedRows !== 1) {
+        throw new Error('No se pudo actualizar el precio del producto');
+      }
   
+      // Actualizar la cantidad de stock del producto
+      const updateStockQuery = 'UPDATE stock SET quantity = ? WHERE product_id = ?';
+      const updateStockResult = await db.query(updateStockQuery, [productData.stock, productData.id]);
+      if (updateStockResult.affectedRows !== 1) {
+        throw new Error('No se pudo actualizar la cantidad de stock del producto');
+      }
   
-      // Get the updated product data
-      const getProductQuery = `
-        SELECT *
-        FROM products
-        WHERE id = ?
-      `;
-      const result = await db.query(getProductQuery, [productData.id]);
+      // Obtener los datos actualizados del producto
+      const getProductQuery = 'SELECT * FROM products WHERE id = ?';
+      const getProductResult = await db.query(getProductQuery, [productData.id]);
+      if (getProductResult.length !== 1) {
+        throw new Error('No se pudo obtener el producto actualizado');
+      }
   
-      return result[0];
+      // Confirmar la transacción
+      await transaction.commit();
+  
+      return getProductResult[0];
     } catch (error) {
       console.error(error);
       if (transaction) {
         await transaction.rollback();
       }
       throw error;
+    } finally {
+      if (db) {
+        await db.end();
+      }
     }
   };
+  
   
