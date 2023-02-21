@@ -4,11 +4,11 @@ import { useNavigation } from '@react-navigation/native';
 
 
 
-const ProductFormScreen = () => {
+const Orders = () => {
 
   useEffect(()=>{
     navigation.setOptions({
-        headerTitle: 'Stock',
+        headerTitle: 'Pedidos',
         headerStyle:{
           backgroundColor: "#0404B4"
         },
@@ -33,4 +33,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default ProductFormScreen;
+export default Orders;
