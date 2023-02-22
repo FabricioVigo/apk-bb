@@ -144,5 +144,52 @@ export const getProductsWithPrices = async (typeId) => {
       }
     }
   };
+
+
+
+  export const getProductAndStock = async (productId) => {
+    const query = `SELECT products.id, products.name, products.description, stock.quantity 
+                   FROM products 
+                   INNER JOIN stock ON products.id = stock.product_id
+                   WHERE products.id = ?`;
   
+    try {
+      const db = await connect();
+      const [rows] = await db.query(query, [productId]);
+      return rows[0];
+    } catch (error) {
+      throw error;
+    }
+  };
+
+
+
+  export const getProductsAndStock = async () => {
+    const query = `SELECT products.id, products.name, products.description, stock.quantity 
+                   FROM products 
+                   INNER JOIN stock ON products.id = stock.product_id`;
   
+    try {
+      const db = await connect();
+      const [rows] = await db.query(query);
+      return rows;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+
+
+  // Servicio para actualizar el stock de un producto
+export const updateProductStock = async (productId, quantity, isAddition) => {
+  const sign = isAddition ? '+' : '-';
+  const query = `UPDATE stock SET quantity = quantity ${sign} ? WHERE product_id = ?`;
+
+  try {
+    const db = await connect();
+    await db.query(query, [quantity, productId]);
+  } catch (error) {
+    throw error;
+  }
+};
+

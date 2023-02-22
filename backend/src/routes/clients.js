@@ -4,15 +4,15 @@ import { deleteClient, getClient, getClients, saveClient, updateClient } from '.
 
 const router = Router();
 
-router.get('/clients', getClients);
+router.get('/api/clients', getClients);
 
-router.get('/clients/:id', getClient);
+router.get('/api/clients/:id', getClient);
 
-router.post('/clients', saveClient);
+router.post('/api/clients', saveClient);
 
-router.delete('/clients/:id', deleteClient);
+router.delete('/api/clients/:id', deleteClient);
 
-router.put('/clients/:id', updateClient);
+router.put('/api/clients/:id', updateClient);
 
 
 export default router; 

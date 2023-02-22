@@ -5,11 +5,11 @@ const router = Router();
 
 
 
-router.get('/stock/:id', getStock);
+router.get('/api/stock/:id', getStock);
 
-router.get('/stock', getAllStocks);
+router.get('/api/stock', getAllStocks);
 
-router.patch('/stock/:id', updateStock);
+router.put('/api/stock/:id', updateStock);
 
 
 export default router;

@@ -4,17 +4,17 @@ import { createNewProduct, deleteProductController, getProduct, getProductCount,
 const router = Router();
 
 
-router.get('/products/:typeId', getProducts);
+router.get('/api/products/:typeId', getProducts);
 
-router.get('/products/count', getProductCount);
+router.get('/api/products/count', getProductCount);
 
-router.get('/products/:id/:typeId', getProduct);
+router.get('/api/products/:id/:typeId', getProduct);
 
-router.post('/products', createNewProduct);
+router.post('/api/products', createNewProduct);
 
-router.delete('/products/:id', deleteProductController);
+router.delete('/api/products/:id', deleteProductController);
 
-router.put('/products/:id', updateProduct);
+router.put('/api/products/:id', updateProduct);
 
 
 export default router;
