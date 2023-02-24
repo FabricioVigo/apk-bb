@@ -42,16 +42,18 @@ export const getProductsWithPrices = async (typeId) => {
       // Insertar el nuevo producto en la tabla "products"
       const db = await connect();
       const result = await db.query('INSERT INTO products (name, description) VALUES (?, ?)', [nombre, descripcion]);
-      const productId = result.insertId;
+      console.log(result)
+      const product_id = result[0].insertId
+      console.log(product_id);
   
       // Insertar los precios del nuevo producto en la tabla "product_prices"
       await db.query('INSERT INTO product_prices (product_id, price, product_type_id) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-                     [productId, precioLista1, 1, productId, precioLista2, 2, productId, precioFiado, 3]);
+                     [product_id, precioLista1, 1, product_id, precioLista2, 2, product_id, precioFiado, 3]);
   
       // Insertar la cantidad inicial del nuevo producto en la tabla "stock"
-      await db.query('INSERT INTO stock (product_id, quantity) VALUES (?, ?)', [productId, cantidadStock]);
+      await db.query('INSERT INTO stock (product_id, quantity) VALUES (?, ?)', [product_id, cantidadStock]);
   
-      return { id: productId, name: nombre, description: descripcion, precioLista1, precioLista2, precioFiado, cantidadStock };
+      return { id: product_id, name: nombre, description: descripcion, precioLista1, precioLista2, precioFiado, cantidadStock };
     } catch (error) {
       throw new Error(`Error al agregar el producto: ${error.message}`);
     }

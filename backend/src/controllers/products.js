@@ -34,7 +34,7 @@ export const createNewProduct = async (req, res) => {
         const { nombre, descripcion, precioLista1, precioLista2, precioFiado, cantidadStock } = req.body;
 
         const newProduct = await addProduct(nombre, descripcion, precioLista1, precioLista2, precioFiado, cantidadStock);
-    
+
         res.status(200).json(newProduct);
       } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -51,7 +51,7 @@ export const createNewProduct = async (req, res) => {
       res.status(500).json({ error: 'Could not delete product' });
     }
   };
-  
+
 
 export const updateProduct = async (req, res) => {
   try {

@@ -17,7 +17,7 @@ export const newOrders = async (req, res) => {
     const connection = await connect();
     const [results] = await connection.query("INSERT INTO orders (fecha, orders) VALUES (?,?)", [
         req.body.fecha,
-        req.body.address
+        req.body.orders
     ])
     res.json({
         id: results.insertId,

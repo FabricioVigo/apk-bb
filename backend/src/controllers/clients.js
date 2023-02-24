@@ -23,7 +23,6 @@ export const saveClient = async (req, res) => {
         id: results.insertId,
         ...req.body
     })
-    
     }catch(error) {
         console.error(error)
 }
