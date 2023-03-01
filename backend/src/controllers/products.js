@@ -53,16 +53,19 @@ export const createNewProduct = async (req, res) => {
   };
 
 
-export const updateProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, description, price, stock } = req.body;
-    const productData = { id, name, description, price, stock };
-
-    const updatedProduct = await updateProductData(productData);
-    res.json(updatedProduct);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-    };
+  export const updateProduct = async (req, res) => {
+    const productId = req.params.productId;
+    const productData = req.body;
+  
+    try {
+      const updatedProduct = await updateProductData({
+        id: productId,
+        ...productData, // Incluir todas las propiedades enviadas en el body de la petición
+      });
+  
+      res.status(200).json(updatedProduct);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al actualizar el producto' });
+    }
+  };

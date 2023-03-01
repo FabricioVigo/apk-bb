@@ -1,5 +1,5 @@
 import { connect } from "../database";
-import { getProductAndStock, getProductsAndStock, updateProductStock } from "../services/productService";
+import { getProductAndStock, getProductsAndStock, updateProductStock } from "../services/stockService";
 
 export const getStock = async (req, res, next) => {
   const productId = req.params.id;

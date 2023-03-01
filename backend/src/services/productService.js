@@ -11,7 +11,7 @@ export const getProductsWithPrices = async (typeId) => {
         WHERE product_prices.product_type_id = ${typeId};
       `;
       const result = await db.query(query);
-      return result;
+      return result[0];
     } catch (error) {
       console.error(error);
       throw error;
@@ -29,7 +29,7 @@ export const getProductsWithPrices = async (typeId) => {
         WHERE products.id = ${id} AND product_prices.product_type_id = ${typeId};
       `;
       const result = await db.query(query);
-      return result;
+      return result[0];
     } catch (error) {
       console.error(error);
       throw error;
@@ -91,107 +91,74 @@ export const getProductsWithPrices = async (typeId) => {
   
   
   export const updateProductData = async (productData) => {
-    let db;
-    let transaction;
+    const db = await connect();
+  
     try {
-      db = await connect();
-      transaction = await db.beginTransaction();
+      const result = await db.transaction(async () => {
+        // Validar los datos de entrada
+        if (!productData.id) {
+          throw new Error('Falta el ID del producto');
+        }
   
-      // Validar los datos de entrada
-      if (!productData.id || !productData.name || !productData.description || !productData.price || !productData.stock) {
-        throw new Error('Los datos de entrada son incorrectos');
-      }
+        // Actualizar el producto y obtener los datos actualizados
+        const updateProductQuery = 'UPDATE products SET ';
+        const updatePriceQuery = 'UPDATE product_prices SET ';
+        const updateStockQuery = 'UPDATE stock SET ';
+        const queryParameters = [];
   
-      // Actualizar el nombre y la descripción del producto
-      const updateProductQuery = 'UPDATE products SET name = ?, description = ? WHERE id = ?';
-      const updateProductResult = await db.query(updateProductQuery, [productData.name, productData.description, productData.id]);
-      if (updateProductResult.affectedRows !== 1) {
-        throw new Error('No se pudo actualizar el producto');
-      }
+        // Agregar cláusulas a las consultas de actualización según las propiedades que se hayan incluido en productData
+        if (productData.name) {
+          updateProductQuery += 'name = ?, ';
+          queryParameters.push(productData.name);
+        }
+        if (productData.description) {
+          updateProductQuery += 'description = ?, ';
+          queryParameters.push(productData.description);
+        }
+        if (productData.price) {
+          updatePriceQuery += 'price = ?, ';
+          queryParameters.push(productData.price);
+        }
+        if (productData.stock) {
+          updateStockQuery += 'quantity = ?, ';
+          queryParameters.push(productData.stock);
+        }
   
-      // Actualizar el precio del producto
-      const updatePriceQuery = 'UPDATE product_prices SET price = ? WHERE product_id = ?';
-      const updatePriceResult = await db.query(updatePriceQuery, [productData.price, productData.id]);
-      if (updatePriceResult.affectedRows !== 1) {
-        throw new Error('No se pudo actualizar el precio del producto');
-      }
+        // Si no se ha incluido ninguna propiedad para actualizar, lanzar un error
+        if (queryParameters.length === 0) {
+          throw new Error('No se han proporcionado datos para actualizar el producto');
+        }
   
-      // Actualizar la cantidad de stock del producto
-      const updateStockQuery = 'UPDATE stock SET quantity = ? WHERE product_id = ?';
-      const updateStockResult = await db.query(updateStockQuery, [productData.stock, productData.id]);
-      if (updateStockResult.affectedRows !== 1) {
-        throw new Error('No se pudo actualizar la cantidad de stock del producto');
-      }
+        // Eliminar la coma final de las consultas de actualización
+        updateProductQuery = updateProductQuery.slice(0, -2) + ' ';
+        updatePriceQuery = updatePriceQuery.slice(0, -2) + ' ';
+        updateStockQuery = updateStockQuery.slice(0, -2) + ' ';
   
-      // Obtener los datos actualizados del producto
-      const getProductQuery = 'SELECT * FROM products WHERE id = ?';
-      const getProductResult = await db.query(getProductQuery, [productData.id]);
-      if (getProductResult.length !== 1) {
-        throw new Error('No se pudo obtener el producto actualizado');
-      }
+        // Agregar la cláusula WHERE a las consultas de actualización
+        updateProductQuery += 'WHERE id = ?';
+        updatePriceQuery += 'WHERE product_id = ?';
+        updateStockQuery += 'WHERE product_id = ?';
+        queryParameters.push(productData.id);
   
-      // Confirmar la transacción
-      await transaction.commit();
+        const [updateProductResult, updatePriceResult, updateStockResult, getProductResult] = await Promise.all([
+          db.query(updateProductQuery, queryParameters),
+          db.query(updatePriceQuery, [productData.price, productData.id]),
+          db.query(updateStockQuery, [productData.stock, productData.id]),
+          db.query(getProductQuery, [productData.id]),
+        ]);
   
-      return getProductResult[0];
+        if (updateProductResult.affectedRows !== 1 || updatePriceResult.affectedRows !== 1 || updateStockResult.affectedRows !== 1 || getProductResult.length !== 1) {
+          throw new Error('No se pudo actualizar el producto');
+        }
+  
+        return getProductResult[0];
+      });
+  
+      return result;
     } catch (error) {
       console.error(error);
-      if (transaction) {
-        await transaction.rollback();
-      }
-      throw error;
+      throw new Error('Error al actualizar el producto');
     } finally {
-      if (db) {
-        await db.end();
-      }
+      await db.end();
     }
   };
-
-
-
-  export const getProductAndStock = async (productId) => {
-    const query = `SELECT products.id, products.name, products.description, stock.quantity 
-                   FROM products 
-                   INNER JOIN stock ON products.id = stock.product_id
-                   WHERE products.id = ?`;
-  
-    try {
-      const db = await connect();
-      const [rows] = await db.query(query, [productId]);
-      return rows[0];
-    } catch (error) {
-      throw error;
-    }
-  };
-
-
-
-  export const getProductsAndStock = async () => {
-    const query = `SELECT products.id, products.name, products.description, stock.quantity 
-                   FROM products 
-                   INNER JOIN stock ON products.id = stock.product_id`;
-  
-    try {
-      const db = await connect();
-      const [rows] = await db.query(query);
-      return rows;
-    } catch (error) {
-      throw error;
-    }
-  }
-  
-
-
-  // Servicio para actualizar el stock de un producto
-export const updateProductStock = async (productId, quantity, isAddition) => {
-  const sign = isAddition ? '+' : '-';
-  const query = `UPDATE stock SET quantity = quantity ${sign} ? WHERE product_id = ?`;
-
-  try {
-    const db = await connect();
-    await db.query(query, [quantity, productId]);
-  } catch (error) {
-    throw error;
-  }
-};
-
